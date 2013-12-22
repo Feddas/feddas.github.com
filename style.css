@@ -1,0 +1,57 @@
+/* style.css - Shawn Featherlys' style sheet */
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family:Arial;
+  color: black;
+  background: #def;
+}
+
+h1,h2,h3,h4,h5,h6 { 
+  color: #459;
+  margin:0;
+}
+
+li > h3 {
+  display: inline-block;
+}
+
+/* start: image styles
+ */
+img.logo {
+  float: right;
+  height: 96px;
+}
+
+body > img.logo {
+  margin: 4px;
+}
+
+.third {
+  text-align: center;
+  display: inline-block;
+  width: 33%;
+  min-width: 290px; /* special case that matches the width of the cert images for better image wrapping */
+}
+/* end: image styles
+ */
+
+ul.root {
+  margin-left: -1.5em;
+}
+
+ul.root > li {
+  background: white;
+  padding: 1em;
+  margin: 4px;
+  border: solid;
+  border-width: 1px;
+  border-color: #bcd;
+}
+
+ul.root > li > a:first-of-type { /* selector for item title */
+  font-weight: bold;
+  font-size: 120%;
+  /* text-decoration: none; */
+}
