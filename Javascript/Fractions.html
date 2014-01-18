@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+JavascriptFractions.html - use javascript to convert to and from fractions and decimals.
+written by Shawn Featherly on Jan. 18th, 2014
+-->
+
+<head>
+  <title>Fractions</title>
+  
+  <script type="text/javascript">
+  //<![CDATA[
+  function convertToFraction(decimal, numerator, denominator)
+  {
+    var valueDecimal = parseFloat(decimal.value);
+
+    //TODO: convert code from Fraction.cs to javascript
+
+    reset();
+  }
+
+  function convertToDecimal(numerator, denominator, decimal)
+  {
+    var valueNumerator = parseFloat(numerator.value);
+    var valueDenominator = parseFloat(denominator.value);
+
+    decimal.value = valueNumerator / valueDenominator;
+    reset();
+  }
+
+  // #region input validation logic
+  //performance flag to skip the copy/paste regex if a key was pressed
+  var entryValidated;
+
+  //logic of this function copied from http://www.cambiaresearch.com/articles/39/how-can-i-use-javascript-to-allow-only-numbers-to-be-entered-in-a-textbox
+  function isNumberKey(evt, currentValue)
+  {
+    entryValidated = true;
+
+    //get the character code for the key pressed
+    var charCode = (evt.which) ? evt.which : event.keyCode;
+
+    var isDigit = (charCode >= 48 && charCode <= 57);
+    var validDecimal = (charCode == 46 && evt.srcElement.value.indexOf(".") == -1);
+    var isPrintable = charCode > 31;
+   
+    if (isDigit == false && validDecimal == false && isPrintable)
+      return false;
+
+    return true;
+  }
+
+  //cleans a pasted value so that it is a valid floating point number
+  //copied from: http://stackoverflow.com/questions/9343751/regex-replacing-multiple-periods-in-floating-number
+  function cleanPaste(textbox)
+  {
+    if (entryValidated)
+      return;
+    textbox.value = textbox.value.replace(/[^\d\.]/g, "")
+      .replace(/\./, "x")
+      .replace(/\./g, "")
+      .replace(/x/, ".");
+  }
+
+  //reset for next input entry
+  function reset()
+  {
+    entryValidated = false;
+  }
+  // #endregion input validation logic
+  //]]>
+  </script>
+  
+  <script type="text/css">
+  </script>
+</head>
+
+<body>
+  <form>
+    <!-- event choice was made after reviewing http://help.dottoro.com/larrqqck.php -->
+    <input type="text" id="decimal" placeholder="decimal value" 
+      onkeypress="return isNumberKey(event, this.value)"
+      oninput="cleanPaste(this);convertToFraction(this, document.getElementById('numerator'), document.getElementById('denominator'))" />
+    =
+    <input type="text" id="numerator" placeholder="numerator value"
+      onkeypress="return isNumberKey(event, this.value)"
+      oninput="cleanPaste(this);convertToDecimal(this, document.getElementById('denominator'), document.getElementById('decimal'))" />
+    /
+    <input type="text" id="denominator" placeholder="denominator value"
+      onkeypress="return isNumberKey(event, this.value)"
+      oninput="cleanPaste(this);convertToDecimal(document.getElementById('numerator'), this, document.getElementById('decimal'))" />
+    </form>
+
+  <p>This is a javascript conversion of the fractions tab from an <a href=
+  "http://Shawn.Featherly.net/Silverlight/Converter.html">old silverlight app I
+  made</a></p>
+</body>
+</html>
