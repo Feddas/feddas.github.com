@@ -14,7 +14,12 @@ written by Shawn Featherly on Jan. 18th, 2014
   {
     var valueDecimal = parseFloat(decimal.value);
 
-    //TODO: convert code from Fraction.cs to javascript
+    if (isNaN(valueDecimal))
+      return;
+    
+    var fraction = Fraction({decimal: valueDecimal});
+    numerator.value = fraction.getNumerator();
+    denominator.value = fraction.getDenominator();
 
     reset();
   }
@@ -68,31 +73,185 @@ written by Shawn Featherly on Jan. 18th, 2014
     entryValidated = false;
   }
   // #endregion input validation logic
+  
+  //Went with liammclennan's way of defining a class http://stackoverflow.com/questions/387707/whats-the-best-way-to-define-a-class-in-javascript
+  var Fraction = function(options)
+  {
+    var decimal = options.decimal;
+    var numerator;
+    var denominator;
+    var significantMax = 12; //maximum digits of percision to match from the decimal
+    var fraction = {};
+    
+    fraction.getNumerator = function()
+    {
+      return numerator;
+    };
+    
+    fraction.getDenominator = function()
+    {
+      return denominator;
+    };
+    
+    var calculateFraction = function()
+    {
+      var precision = getPrecision();
+      
+      var fractionalPart = decimal - Math.floor(decimal);
+      if (fractionalPart > precision)
+      {
+        getFraction(precision, fractionalPart);
+        
+        //handle values over 1, such as 1.3 = 13/10
+        numerator = Math.floor(decimal) * denominator + numerator;
+      }
+      else
+      {
+        numerator = Math.floor(decimal);
+        denominator = 1;
+      }
+      
+    };
+    
+    var getFraction = function(precision, fractionalPart)
+    { 
+      var numeratorDelta = 0;
+      var denominatorDelta = 0;
+      var numeratorPivot;
+      var denominatorPivot;
+      var wasGreater;
+      
+      //start the fraction search at 0.5
+      numerator = 1;
+      denominator = 2;
+      
+      var updateTraversal = function()
+      {
+        //save values so that they can be used 2 nodes down the tree
+        numeratorPivot = numerator;
+        denominatorPivot = denominator;
+        
+        //iterate up to next fraction
+        numerator += numeratorDelta;
+        denominator += denominatorDelta;
+        
+        //return difference from fractional part of target decimal
+        return fractionalPart - (numerator / denominator)
+      }
+      var diff = updateTraversal();
+      
+      //first iteration also does some initialization
+      if (diff < 0) //make fraction smaller
+      {
+        numeratorDelta = 0;
+        denominatorDelta = 1;
+        wasGreater = false;
+      }
+      else if (diff > 0) //make fraction bigger
+      {
+        numeratorDelta = 1;
+        denominatorDelta = 1;
+        wasGreater = true;
+      }
+      diff = updateTraversal();
+      
+      //subsequent iterations continue until precision is met
+      while (diff < -1 * precision || diff > precision)
+      {
+        if (diff < 0) //make fraction smaller
+        {
+          if (wasGreater) //modify pivot for new decrease value tree direction
+          {
+            numeratorDelta = numeratorPivot;
+            denominatorDelta = denominatorPivot;
+          }
+          wasGreater = false;
+        }
+        else if (diff > 0) //make fraction bigger
+        {
+          if (!wasGreater) //modify pivot for new increase value tree direction
+          {
+            numeratorDelta = numeratorPivot;
+            denominatorDelta = denominatorPivot;
+          }
+          wasGreater = true;
+        }
+        diff = updateTraversal();
+      }
+    }
+    
+    var getSignificantDigits = function()
+    {
+      var decimalAsString = decimal.toString();
+      var significantDigits = decimalAsString.length - decimalAsString.indexOf(".") - 1;
+      return (significantDigits > 1 ? significantDigits : 2);  //this extra digit assumes the user would want 0.3 to be 3/10 and not be 1/3
+    };
+    
+    var getPrecision = function()
+    {
+      var precision = 1 / Math.pow(10, getSignificantDigits());
+      var precisionMax = 1 / Math.pow(10, significantMax);
+      
+      if (precision < precisionMax) //this is a guess of the max computations most machines can gracefully handle
+        return precisionMax;
+      else
+        return precision;
+    };
+    
+    calculateFraction();
+    return fraction;
+  }
   //]]>
   </script>
   
-  <script type="text/css">
-  </script>
+  <style>
+  html {
+    background-color:#def;
+    color: #459;
+    text-align:center;
+  }
+  
+  input {
+    background:White;
+    border: 1px double #DDD;
+    padding: 5px 10px;
+    font-size: 300%;
+    Width: 6em;
+  }
+    
+  .note {
+    padding-top:30px;
+    color:grey;
+    font-size:80%;
+  }
+  
+  /* symbols seperate text boxes */
+  .symbol {
+    font-weight:bolder;
+    font-size:300%;
+  }
+  </style>
 </head>
 
 <body>
-  <form>
-    <!-- event choice was made after reviewing http://help.dottoro.com/larrqqck.php -->
+  <form id="body">
+    <p>Use the first field to convert numbers, like 3.1415, to an approximate reduced fraction</p>
     <input type="text" id="decimal" placeholder="decimal value" 
       onkeypress="return isNumberKey(event, this.value)"
       oninput="cleanPaste(this);convertToFraction(this, document.getElementById('numerator'), document.getElementById('denominator'))" />
-    =
+    <!-- oninput event choice was made after reviewing http://help.dottoro.com/larrqqck.php -->
+    <br /><span class="symbol">&#x2248;</span>
     <input type="text" id="numerator" placeholder="numerator value"
       onkeypress="return isNumberKey(event, this.value)"
       oninput="cleanPaste(this);convertToDecimal(this, document.getElementById('denominator'), document.getElementById('decimal'))" />
-    /
+    <span class="symbol">/</span>
     <input type="text" id="denominator" placeholder="denominator value"
       onkeypress="return isNumberKey(event, this.value)"
       oninput="cleanPaste(this);convertToDecimal(document.getElementById('numerator'), this, document.getElementById('decimal'))" />
-    </form>
-
-  <p>This is a javascript conversion of the fractions tab from an <a href=
-  "http://Shawn.Featherly.net/Silverlight/Converter.html">old silverlight app I
-  made</a></p>
+    <br />
+  </form>
+  <div class="note">This is a javascript conversion of the fraction tab from an
+    <a href="http://Shawn.Featherly.net/Silverlight/Converter.html">old silverlight app I made</a>
+  </div>
 </body>
 </html>
