@@ -1,1 +1,1 @@
-https://bouncylasersmvc.apphb.com/
+https://bouncylasers.azurewebsites.net/
