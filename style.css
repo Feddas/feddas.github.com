@@ -25,7 +25,7 @@ img.logo {
 }
 
 body > img.logo {
-  margin: 4px;
+  margin: -14px; /* minimize row height by countering body 20px padding */
 }
 
 .third {
