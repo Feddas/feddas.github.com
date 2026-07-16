@@ -7,41 +7,77 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
-        input, button { padding: 10px; margin: 5px; font-size: 16px; }
+        input, select, button { padding: 10px; margin: 5px; font-size: 16px; }
+        .header { text-align: center; }
+        .header h2 { margin: 0px; }
+        .controls {  margin-top: 20px; display: flex; flex-direction: column; gap: 5px; align-items: center; }
         #qrcode { margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <h2>QR Code Generator</h2>
-    <input type="text" id="text-input" value="123456789012" placeholder="Enter text or URL">
-    <button onclick="generateQR()">Generate QR Code</button>
+    <div class="header">
+        <h2>QR Code Generator</h2>
+        <a href="https://kazuhikoarase.github.io/qrcode-generator/js/demo/">different API</a>
+    </div>
 
-    <!-- Container where the QR Code will render -->
-    <div id="qrcode"></div>
+    <div class="controls">
+        <input title="Payload to be contained in the QR Code" type="text" id="text-input" value="Enter text or URL" placeholder="Enter text or URL">
+
+        <!-- Dropdown for Error Correction Level https://github.com/davidshimjs/qrcodejs/blob/master/qrcode.js#L477 -->
+        <select title="Error Correction Level of the QR Code" id="correction-level">
+            <option value="L">Level L (Low ~7%)</option>
+            <option value="M">Level M (Medium ~15%)</option>
+            <option value="Q" selected>Level Q (Quartile ~25%)</option>
+            <option value="H">Level H (High ~30%)</option>
+        </select>
+
+        <button onclick="generateQR()">Generate QR Code</button>
+    </div>
+
+    <div id="qrcode"><!-- Container where the QR Code will render --></div>
 
     <script>
-        // Initialize the QR Code instance once
-        const qrcode = new QRCode(document.getElementById("qrcode"), {
-            text: "123456789012",
-            width: 256,
-            height: 256,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            // https://github.com/davidshimjs/qrcodejs/blob/master/qrcode.js#L477
-            correctLevel : QRCode.CorrectLevel.L
-        });
+        // Keep a reference to the QR Code instance
+        let qrcodeInstance = null;
 
-        // Function to update the QR code with user input
+        // Function to update the QR code with user input and selected correction level
         function generateQR() {
             const inputValue = document.getElementById("text-input").value;
+            const levelKey = document.getElementById("correction-level").value;
+
             if (!inputValue.trim()) {
                 alert("Please enter some text!");
                 return;
             }
-            qrcode.clear(); // Clear the old code
-            qrcode.makeCode(inputValue); // Generate the new code
+
+            if (qrcodeInstance == null || qrcodeInstance.Correctionlevel != levelKey) {
+                newQRInstance(inputValue, levelKey);
+            }
+            else { // reuse the previous levelKey to increase performance
+                qrcodeInstance.Clear();
+                qrcodeInstance.makeCode(inputValue);
+            }
         }
+
+        function newQRInstance(inputValue, levelKey) {
+            // 1. Clear the container's HTML to remove the old canvas/image elements
+            const qrcodeContainer = document.getElementById("qrcode");
+            qrcodeContainer.innerHTML = "";
+
+            // 2. Instantiate a fresh QRCode with the selected correction level
+            qrcodeInstance = new QRCode(qrcodeContainer, {
+                text: inputValue,
+                width: 256,
+                height: 256,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel[levelKey] // Dynamically access L, M, Q, or H
+            });
+        }
+
+        // Generate the initial QR code on page load
+        generateQR();
     </script>
 </body>
 </html>
