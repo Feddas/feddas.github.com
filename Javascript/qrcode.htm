@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript QR Code Generator</title>
+    <!-- Include QRCode.js via https://cdnjs.com/libraries/qrcodejs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
+        input, button { padding: 10px; margin: 5px; font-size: 16px; }
+        #qrcode { margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h2>QR Code Generator</h2>
+    <input type="text" id="text-input" value="123456789012" placeholder="Enter text or URL">
+    <button onclick="generateQR()">Generate QR Code</button>
+
+    <!-- Container where the QR Code will render -->
+    <div id="qrcode"></div>
+
+    <script>
+        // Initialize the QR Code instance once
+        const qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "123456789012",
+            width: 256,
+            height: 256,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            // https://github.com/davidshimjs/qrcodejs/blob/master/qrcode.js#L477
+            correctLevel : QRCode.CorrectLevel.L
+        });
+
+        // Function to update the QR code with user input
+        function generateQR() {
+            const inputValue = document.getElementById("text-input").value;
+            if (!inputValue.trim()) {
+                alert("Please enter some text!");
+                return;
+            }
+            qrcode.clear(); // Clear the old code
+            qrcode.makeCode(inputValue); // Generate the new code
+        }
+    </script>
+</body>
+</html>
